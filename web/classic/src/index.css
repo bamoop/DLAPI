@@ -691,34 +691,11 @@ html.dark .sbg-variant-green {
 }
 
 .shine-text {
-  background: linear-gradient(
-    90deg,
-    currentColor 0%,
-    currentColor 40%,
-    rgba(255, 255, 255, 0.9) 50%,
-    currentColor 60%,
-    currentColor 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: sweep-shine 4s linear infinite;
+  color: inherit;
 }
 
 .dark .shine-text {
-  background: linear-gradient(
-    90deg,
-    currentColor 0%,
-    currentColor 40%,
-    #facc15 50%,
-    currentColor 60%,
-    currentColor 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: inherit;
 }
 
 /* ==================== ScrollList 定制样式 ==================== */
@@ -748,39 +725,23 @@ html.dark .sbg-variant-green {
 
 /* ==================== Banner 背景模糊球 ==================== */
 .blur-ball {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  z-index: -1;
+  display: none;
 }
 
 .blur-ball-indigo {
-  background: #6366f1;
-  /* indigo-500 */
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0.5;
+  display: none;
 }
 
 .blur-ball-teal {
-  background: #14b8a6;
-  /* teal-400 */
-  top: 200px;
-  left: 30%;
-  opacity: 0.4;
+  display: none;
 }
 
-/* 浅色主题下让模糊球更柔和 */
 html:not(.dark) .blur-ball-indigo {
-  opacity: 0.25;
+  display: none;
 }
 
 html:not(.dark) .blur-ball-teal {
-  opacity: 0.2;
+  display: none;
 }
 
 /* ==================== 卡片马卡龙模糊球（类封装） ==================== */

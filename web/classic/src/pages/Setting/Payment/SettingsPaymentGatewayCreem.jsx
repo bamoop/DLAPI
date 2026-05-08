@@ -291,7 +291,7 @@ export default function SettingsPaymentGatewayCreem(props) {
                 field='CreemWebhookSecret'
                 label={t('Webhook 签名密钥')}
                 placeholder={t(
-                  '用于验证回调 new-api 的 webhook 请求的密钥，敏感信息不显示',
+                  '用于验证 webhook 回调请求的密钥，敏感信息不显示',
                 )}
                 type='password'
               />

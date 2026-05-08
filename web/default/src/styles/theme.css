@@ -19,7 +19,9 @@ For commercial licensing, please contact support@quantumnous.com
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
   --font-inter:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -77,95 +79,96 @@ For commercial licensing, please contact support@quantumnous.com
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Light mode: Notion-style neutral ── */
 :root {
-  --radius: 0.5rem;
+  --radius: 0.4rem;
   --app-header-height: 3rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.13 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.49 0 0);
-  --accent: oklch(0.95 0 0);
-  --accent-foreground: oklch(0.145 0 0);
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #111827;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
+  --accent-foreground: #111827;
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive-foreground: #ffffff;
   --success: oklch(0.596 0.145 163.225);
-  --success-foreground: oklch(0.985 0 0);
+  --success-foreground: #ffffff;
   --warning: oklch(0.681 0.162 75.834);
-  --warning-foreground: oklch(0.145 0 0);
-  --info: oklch(0.588 0.158 241.966);
-  --info-foreground: oklch(0.985 0 0);
-  --neutral: oklch(0.708 0 0);
-  --neutral-foreground: oklch(0.145 0 0);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.93 0 0);
-  --ring: oklch(0.708 0 0);
+  --warning-foreground: #111827;
+  --info: #0ea5e9;
+  --info-foreground: #ffffff;
+  --neutral: #9ca3af;
+  --neutral-foreground: #111827;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #6b7280;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.975 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.13 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.92 0 0);
-  --sidebar-accent-foreground: oklch(0.145 0 0);
-  --sidebar-border: oklch(0.93 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --skeleton-base: oklch(0.97 0 0);
-  --skeleton-highlight: oklch(0.985 0 0);
+  --sidebar: #f9fafb;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #111827;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #6b7280;
+  --skeleton-base: #f3f4f6;
+  --skeleton-highlight: #f9fafb;
 }
 
+/* ── Dark mode: Notion-dark neutral ── */
 .dark {
-  /* OpenAI-like dark mode: nearly black chrome, readable raised surfaces. */
-  --background: oklch(0.185 0 0);
-  --foreground: oklch(0.965 0 0);
-  --card: oklch(0.235 0 0);
-  --card-foreground: oklch(0.965 0 0);
-  --popover: oklch(0.255 0 0);
-  --popover-foreground: oklch(0.965 0 0);
-  --primary: oklch(0.965 0 0);
-  --primary-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.285 0 0);
-  --secondary-foreground: oklch(0.965 0 0);
-  --muted: oklch(0.255 0 0);
-  --muted-foreground: oklch(0.76 0 0);
-  --accent: oklch(0.325 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #111827;
+  --foreground: #f9fafb;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+  --popover: #1f2937;
+  --popover-foreground: #f9fafb;
+  --primary: #f9fafb;
+  --primary-foreground: #111827;
+  --secondary: #374151;
+  --secondary-foreground: #f9fafb;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --accent: #374151;
+  --accent-foreground: #f9fafb;
   --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive-foreground: #ffffff;
   --success: oklch(0.696 0.17 162.48);
-  --success-foreground: oklch(0.145 0 0);
+  --success-foreground: #111827;
   --warning: oklch(0.769 0.188 70.08);
-  --warning-foreground: oklch(0.145 0 0);
-  --info: oklch(0.68 0.17 237.323);
-  --info-foreground: oklch(0.145 0 0);
-  --neutral: oklch(0.76 0 0);
-  --neutral-foreground: oklch(0.145 0 0);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.68 0 0);
+  --warning-foreground: #111827;
+  --info: #38bdf8;
+  --info-foreground: #111827;
+  --neutral: #6b7280;
+  --neutral-foreground: #111827;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #6b7280;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.115 0 0);
-  --sidebar-foreground: oklch(0.95 0 0);
-  --sidebar-primary: oklch(0.965 0 0);
-  --sidebar-primary-foreground: oklch(0.145 0 0);
-  --sidebar-accent: oklch(0.31 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.68 0 0);
-  --skeleton-base: oklch(0.285 0 0);
-  --skeleton-highlight: oklch(0.39 0 0);
+  --sidebar: #0d1117;
+  --sidebar-foreground: #e5e7eb;
+  --sidebar-primary: #f9fafb;
+  --sidebar-primary-foreground: #111827;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: #6b7280;
+  --skeleton-base: #374151;
+  --skeleton-highlight: #4b5563;
 }

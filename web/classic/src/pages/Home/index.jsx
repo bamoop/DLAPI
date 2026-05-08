@@ -159,9 +159,21 @@ const Home = () => {
         <div className='w-full overflow-x-hidden'>
           {/* Banner 部分 */}
           <div className='w-full border-b border-semi-color-border min-h-[500px] md:min-h-[600px] lg:min-h-[700px] relative overflow-x-hidden'>
-            {/* 背景模糊晕染球 */}
-            <div className='blur-ball blur-ball-indigo' />
-            <div className='blur-ball blur-ball-teal' />
+            {/* 背景点阵 */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: 'radial-gradient(var(--semi-color-border) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+                WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 100%)',
+                maskImage: 'radial-gradient(ellipse 70% 60% at 50% 30%, black 10%, transparent 100%)',
+                opacity: 0.35,
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            />
             <div className='flex items-center justify-center h-full px-4 py-20 md:py-24 lg:py-32 mt-10'>
               {/* 居中内容区 */}
               <div className='flex flex-col items-center justify-center text-center max-w-4xl mx-auto'>
@@ -228,13 +240,6 @@ const Home = () => {
                     <Button
                       size={isMobile ? 'default' : 'large'}
                       className='flex items-center !rounded-3xl px-6 py-2'
-                      icon={<IconGithubLogo />}
-                      onClick={() =>
-                        window.open(
-                          'https://github.com/QuantumNous/new-api',
-                          '_blank',
-                        )
-                      }
                     >
                       {statusState.status.version}
                     </Button>

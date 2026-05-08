@@ -15,6 +15,7 @@ web/dist
 .env
 one-api
 new-api
+cavan-server
 /__debug_bin*
 .DS_Store
 tiktoken_cache
