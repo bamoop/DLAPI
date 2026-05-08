@@ -56,6 +56,7 @@ import {
   getChannelIcon,
   getModelCategories,
   selectFilter,
+  isRoot,
 } from '../../../../helpers';
 import ModelSelectModal from './ModelSelectModal';
 import SingleModelSelectModal from './SingleModelSelectModal';
@@ -215,6 +216,8 @@ const EditChannelModal = (props) => {
     upstream_model_update_last_check_time: 0,
     upstream_model_update_last_detected_models: [],
     upstream_model_update_ignored_models: '',
+    other_info: '',
+    root_only: false,
   };
   const [batch, setBatch] = useState(false);
   const [multiToSingle, setMultiToSingle] = useState(false);
@@ -1006,6 +1009,7 @@ const EditChannelModal = (props) => {
       if (data.other_info) {
         try {
           const maybeMeta = JSON.parse(data.other_info);
+          data.root_only = maybeMeta?.root_only === true;
           if (
             maybeMeta &&
             typeof maybeMeta === 'object' &&
@@ -1828,6 +1832,21 @@ const EditChannelModal = (props) => {
 
     localInputs.settings = JSON.stringify(settings);
 
+    let otherInfo = {};
+    if (localInputs.other_info) {
+      try {
+        otherInfo = JSON.parse(localInputs.other_info);
+      } catch (error) {
+        console.error('解析other_info失败:', error);
+      }
+    }
+    if (localInputs.root_only === true) {
+      otherInfo.root_only = true;
+    } else if ('root_only' in otherInfo) {
+      delete otherInfo.root_only;
+    }
+    localInputs.other_info = JSON.stringify(otherInfo);
+
     // 清理不需要发送到后端的字段
     delete localInputs.force_format;
     delete localInputs.thinking_to_content;
@@ -1853,6 +1872,7 @@ const EditChannelModal = (props) => {
     delete localInputs.upstream_model_update_last_check_time;
     delete localInputs.upstream_model_update_last_detected_models;
     delete localInputs.upstream_model_update_ignored_models;
+    delete localInputs.root_only;
 
     let res;
     localInputs.auto_ban = localInputs.auto_ban ? 1 : 0;
@@ -2665,6 +2685,22 @@ const EditChannelModal = (props) => {
                       onChange={(value) => handleInputChange('name', value)}
                       autoComplete='new-password'
                     />
+
+                    {isRoot() && (
+                      <Form.Switch
+                        field='root_only'
+                        label={t('超级管理员专属渠道')}
+                        checkedText={t('是')}
+                        uncheckedText={t('否')}
+                        initValue={inputs.root_only === true}
+                        onChange={(value) => {
+                          handleInputChange('root_only', value);
+                        }}
+                        extraText={t(
+                          '开启后，普通管理员只能看到该渠道存在，但无法查看敏感配置或修改。',
+                        )}
+                      />
+                    )}
 
                     {inputs.type === 33 && (
                       <>

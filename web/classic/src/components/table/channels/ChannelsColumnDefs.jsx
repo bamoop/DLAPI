@@ -39,6 +39,7 @@ import {
   showError,
   showInfo,
 } from '../../../helpers';
+import { isRoot } from '../../../helpers/utils';
 import {
   CHANNEL_OPTIONS,
   MODEL_FETCHABLE_CHANNEL_TYPES,
@@ -50,6 +51,23 @@ import {
   IconAlertTriangle,
 } from '@douyinfe/semi-icons';
 import { FaRandom } from 'react-icons/fa';
+
+const parseChannelOtherInfo = (record) => {
+  if (!record?.other_info || typeof record.other_info !== 'string') {
+    return {};
+  }
+  try {
+    const parsed = JSON.parse(record.other_info);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+};
+
+const isRootOnlyChannel = (record) =>
+  parseChannelOtherInfo(record).root_only === true;
+
+const isRootOnlyReadonly = (record) => isRootOnlyChannel(record) && !isRoot();
 
 // Render functions
 const renderType = (type, record = {}, t) => {
@@ -348,6 +366,7 @@ export const getChannelsColumns = ({
           upstreamUpdateMeta.supported &&
           upstreamUpdateMeta.enabled &&
           (pendingAddCount > 0 || pendingRemoveCount > 0);
+        const rootOnly = isRootOnlyChannel(record);
         const nameNode =
           record.remark && record.remark.trim() !== '' ? (
             <Tooltip
@@ -383,7 +402,7 @@ export const getChannelsColumns = ({
             <span>{text}</span>
           );
 
-        if (!passThroughEnabled && !showUpstreamUpdateTag) {
+        if (!passThroughEnabled && !showUpstreamUpdateTag && !rootOnly) {
           return nameNode;
         }
 
@@ -404,6 +423,11 @@ export const getChannelsColumns = ({
                   />
                 </span>
               </Tooltip>
+            )}
+            {rootOnly && (
+              <Tag color='orange' type='light' size='small'>
+                {t('超级管理员专属')}
+              </Tag>
             )}
             {showUpstreamUpdateTag && (
               <Space spacing={4} align='center'>
@@ -578,11 +602,13 @@ export const getChannelsColumns = ({
       dataIndex: 'priority',
       render: (text, record, index) => {
         if (record.children === undefined) {
+          const rootOnlyReadonly = isRootOnlyReadonly(record);
           return (
             <div>
               <InputNumber
                 style={{ width: 70 }}
                 name='priority'
+                disabled={rootOnlyReadonly}
                 onBlur={(e) => {
                   manageChannel(record.id, 'priority', record, e.target.value);
                 }}
@@ -633,11 +659,13 @@ export const getChannelsColumns = ({
       dataIndex: 'weight',
       render: (text, record, index) => {
         if (record.children === undefined) {
+          const rootOnlyReadonly = isRootOnlyReadonly(record);
           return (
             <div>
               <InputNumber
                 style={{ width: 70 }}
                 name='weight'
+                disabled={rootOnlyReadonly}
                 onBlur={(e) => {
                   manageChannel(record.id, 'weight', record, e.target.value);
                 }}
@@ -689,6 +717,7 @@ export const getChannelsColumns = ({
       fixed: 'right',
       render: (text, record, index) => {
         if (record.children === undefined) {
+          const rootOnlyReadonly = isRootOnlyReadonly(record);
           const upstreamUpdateMeta = getUpstreamUpdateMeta(record);
           const moreMenuItems = [
             {
@@ -696,6 +725,10 @@ export const getChannelsColumns = ({
               name: t('删除'),
               type: 'danger',
               onClick: () => {
+                if (rootOnlyReadonly) {
+                  showInfo(t('该渠道为超级管理员专属，无法修改'));
+                  return;
+                }
                 Modal.confirm({
                   title: t('确定是否要删除此渠道？'),
                   content: t('此修改将不可逆'),
@@ -718,6 +751,10 @@ export const getChannelsColumns = ({
               name: t('复制'),
               type: 'tertiary',
               onClick: () => {
+                if (rootOnlyReadonly) {
+                  showInfo(t('该渠道为超级管理员专属，无法修改'));
+                  return;
+                }
                 Modal.confirm({
                   title: t('确定是否要复制此渠道？'),
                   content: t('复制渠道的所有信息'),
@@ -801,6 +838,7 @@ export const getChannelsColumns = ({
                 <Button
                   type='danger'
                   size='small'
+                  disabled={rootOnlyReadonly}
                   onClick={() => manageChannel(record.id, 'disable', record)}
                 >
                   {t('禁用')}
@@ -808,6 +846,7 @@ export const getChannelsColumns = ({
               ) : (
                 <Button
                   size='small'
+                  disabled={rootOnlyReadonly}
                   onClick={() => manageChannel(record.id, 'enable', record)}
                 >
                   {t('启用')}
@@ -819,6 +858,7 @@ export const getChannelsColumns = ({
                   <Button
                     type='tertiary'
                     size='small'
+                    disabled={rootOnlyReadonly}
                     onClick={() => {
                       setEditingChannel(record);
                       setShowEdit(true);
@@ -851,6 +891,7 @@ export const getChannelsColumns = ({
                 <Button
                   type='tertiary'
                   size='small'
+                  disabled={rootOnlyReadonly}
                   onClick={() => {
                     setEditingChannel(record);
                     setShowEdit(true);
