@@ -6,7 +6,10 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
+	"github.com/QuantumNous/new-api/common/claude_code"
+	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/relay/channel"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
@@ -14,6 +17,7 @@ import (
 	"github.com/QuantumNous/new-api/types"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Adaptor struct {
@@ -77,6 +81,75 @@ func CommonClaudeHeadersOperation(c *gin.Context, req *http.Header, info *relayc
 		req.Set("anthropic-beta", anthropicBeta)
 	}
 	model_setting.GetClaudeSettings().WriteHeaders(info.OriginModelName, req)
+	applyClaudeCodeMimicryHeaders(c, req, info)
+}
+
+// applyClaudeCodeMimicryHeaders injects headers that make the outgoing request
+// look like real Claude Code CLI traffic. It is gated on:
+//  1. the authenticated token has the claude_code_header flag enabled, and
+//  2. the outgoing model is a claude-* model.
+// Both conditions are required so that this opt-in feature stays invisible to
+// any other request path.
+func applyClaudeCodeMimicryHeaders(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) {
+	if c == nil || req == nil {
+		return
+	}
+	if !c.GetBool(string(constant.ContextKeyTokenClaudeCodeHeader)) {
+		return
+	}
+	model := ""
+	if info != nil {
+		model = info.OriginModelName
+	}
+	if !strings.HasPrefix(strings.ToLower(strings.TrimSpace(model)), "claude-") {
+		return
+	}
+
+	req.Set("Accept", "application/json")
+	for k, v := range claude_code.DefaultHeaders {
+		if v == "" {
+			continue
+		}
+		req.Set(k, v)
+	}
+	if req.Get("X-Claude-Code-Session-Id") == "" {
+		req.Set("X-Claude-Code-Session-Id", uuid.NewString())
+	}
+	if req.Get("x-client-request-id") == "" {
+		req.Set("x-client-request-id", uuid.NewString())
+	}
+	req.Set("anthropic-beta", mergeBetaTokens(claude_code.FullClaudeCodeMimicryBetas(), req.Get("anthropic-beta")))
+}
+
+// mergeBetaTokens combines required mimicry betas with any client-supplied
+// anthropic-beta header. Required tokens come first to mirror real CLI order;
+// extra client tokens are appended de-duplicated.
+func mergeBetaTokens(required []string, existing string) string {
+	seen := make(map[string]struct{}, len(required)+4)
+	out := make([]string, 0, len(required)+4)
+	for _, tok := range required {
+		tok = strings.TrimSpace(tok)
+		if tok == "" {
+			continue
+		}
+		if _, ok := seen[tok]; ok {
+			continue
+		}
+		seen[tok] = struct{}{}
+		out = append(out, tok)
+	}
+	for _, tok := range strings.Split(existing, ",") {
+		tok = strings.TrimSpace(tok)
+		if tok == "" {
+			continue
+		}
+		if _, ok := seen[tok]; ok {
+			continue
+		}
+		seen[tok] = struct{}{}
+		out = append(out, tok)
+	}
+	return strings.Join(out, ",")
 }
 
 func (a *Adaptor) SetupRequestHeader(c *gin.Context, req *http.Header, info *relaycommon.RelayInfo) error {
