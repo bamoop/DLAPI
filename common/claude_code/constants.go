@@ -12,28 +12,30 @@ package claude_code
 // in lockstep with the User-Agent below.
 const CLICurrentVersion = "2.1.92"
 
-// anthropic-beta tokens that real Claude Code traffic typically advertises.
+// anthropic-beta tokens for API-key account Claude Code mimicry.
+// Matches sub2api's claudeCodeProfileRequiredBetas for AccountTypeAPIKey.
+// oauth-2025-04-20 is intentionally excluded — it is OAuth-only and causes
+// errors when sent with a standard API key.
 const (
-	BetaOAuth               = "oauth-2025-04-20"
-	BetaClaudeCode          = "claude-code-20250219"
-	BetaInterleavedThinking = "interleaved-thinking-2025-05-14"
-	BetaPromptCachingScope  = "prompt-caching-scope-2026-01-05"
-	BetaEffort              = "effort-2025-11-24"
-	BetaContextManagement   = "context-management-2025-06-27"
-	BetaExtendedCacheTTL    = "extended-cache-ttl-2025-04-11"
+	BetaClaudeCode              = "claude-code-20250219"
+	BetaInterleavedThinking     = "interleaved-thinking-2025-05-14"
+	BetaPromptCachingScope      = "prompt-caching-scope-2026-01-05"
+	BetaEffort                  = "effort-2025-11-24"
+	BetaRedactThinking          = "redact-thinking-2026-02-12"
+	BetaContextManagement       = "context-management-2025-06-27"
+	BetaExtendedCacheTTL        = "extended-cache-ttl-2025-04-11"
 )
 
-// FullClaudeCodeMimicryBetas returns the ordered list of anthropic-beta tokens
-// we inject when mimicking Claude Code. The order mirrors what the real CLI
-// sends. Callers should merge this with any client-supplied anthropic-beta
-// header so explicit client betas are not lost.
+// FullClaudeCodeMimicryBetas returns the anthropic-beta tokens to inject when
+// mimicking Claude Code CLI on an API-key account. Callers merge this with any
+// client-supplied anthropic-beta so explicit client betas are not lost.
 func FullClaudeCodeMimicryBetas() []string {
 	return []string{
 		BetaClaudeCode,
-		BetaOAuth,
 		BetaInterleavedThinking,
 		BetaPromptCachingScope,
 		BetaEffort,
+		BetaRedactThinking,
 		BetaContextManagement,
 		BetaExtendedCacheTTL,
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
+	"github.com/QuantumNous/new-api/relay/channel/claude"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relay/helper"
 	"github.com/QuantumNous/new-api/service"
@@ -151,7 +152,17 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 		if err != nil {
 			return types.NewErrorWithStatusCode(err, types.ErrorCodeReadRequestBodyFailed, http.StatusBadRequest, types.ErrOptionWithSkipRetry())
 		}
-		requestBody = common.ReaderOnly(storage)
+		// Apply Claude Code mimicry on the raw bytes; falls through unchanged
+		// when the token flag is off or the model isn't claude-*.
+		rawBytes, readErr := io.ReadAll(storage)
+		if readErr != nil {
+			return types.NewErrorWithStatusCode(readErr, types.ErrorCodeReadRequestBodyFailed, http.StatusBadRequest, types.ErrOptionWithSkipRetry())
+		}
+		rawBytes = claude.ApplyClaudeCodeBodyMimicry(c, rawBytes)
+		if common.DebugEnabled {
+			println("requestBody (passthrough): ", string(rawBytes))
+		}
+		requestBody = bytes.NewBuffer(rawBytes)
 	} else {
 		convertedRequest, err := adaptor.ConvertClaudeRequest(c, info, request)
 		if err != nil {
@@ -176,6 +187,10 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 				return newAPIErrorFromParamOverride(err)
 			}
 		}
+
+		// Apply Claude Code mimicry after marshal/override so it works
+		// uniformly on the final JSON bytes regardless of upstream path.
+		jsonData = claude.ApplyClaudeCodeBodyMimicry(c, jsonData)
 
 		if common.DebugEnabled {
 			println("requestBody: ", string(jsonData))
