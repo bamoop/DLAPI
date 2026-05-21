@@ -90,6 +90,7 @@ func buildChannelListQuery(group string, statusFilter int, typeFilter int) *gorm
 }
 
 func GetAllChannels(c *gin.Context) {
+	role := c.GetInt("role")
 	pageInfo := common.GetPageQuery(c)
 	channelData := make([]*model.Channel, 0)
 	idSort, _ := strconv.ParseBool(c.Query("id_sort"))
@@ -160,6 +161,7 @@ func GetAllChannels(c *gin.Context) {
 	for _, datum := range channelData {
 		clearChannelInfo(datum)
 	}
+	channelData = service.SanitizeChannelListForRole(role, channelData)
 
 	countQuery := buildChannelListQuery(groupFilter, statusFilter, -1)
 	var results []struct {
@@ -258,6 +260,7 @@ func FixChannelsAbilities(c *gin.Context) {
 }
 
 func SearchChannels(c *gin.Context) {
+	role := c.GetInt("role")
 	keyword := c.Query("keyword")
 	group := c.Query("group")
 	modelKeyword := c.Query("model")
@@ -366,6 +369,7 @@ func SearchChannels(c *gin.Context) {
 	for _, datum := range pagedData {
 		clearChannelInfo(datum)
 	}
+	pagedData = service.SanitizeChannelListForRole(role, pagedData)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -380,6 +384,7 @@ func SearchChannels(c *gin.Context) {
 }
 
 func GetChannel(c *gin.Context) {
+	role := c.GetInt("role")
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		common.ApiError(c, err)
@@ -392,6 +397,7 @@ func GetChannel(c *gin.Context) {
 	}
 	if channel != nil {
 		clearChannelInfo(channel)
+		channel = service.SanitizeChannelForRole(role, channel)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -585,6 +591,7 @@ func getVertexArrayKeys(keys string) ([]string, error) {
 }
 
 func AddChannel(c *gin.Context) {
+	role := c.GetInt("role")
 	addChannelRequest := AddChannelRequest{}
 	err := c.ShouldBindJSON(&addChannelRequest)
 	if err != nil {
@@ -602,6 +609,7 @@ func AddChannel(c *gin.Context) {
 	}
 
 	addChannelRequest.Channel.CreatedTime = common.GetTimestamp()
+	service.NormalizeChannelOtherInfoForRole(role, addChannelRequest.Channel)
 	keys := make([]string, 0)
 	switch addChannelRequest.Mode {
 	case "multi_to_single":
@@ -686,8 +694,18 @@ func AddChannel(c *gin.Context) {
 
 func DeleteChannel(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	role := c.GetInt("role")
+	originChannel, err := model.GetChannelById(id, false)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	if !service.CanEditChannel(role, originChannel) {
+		common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+		return
+	}
 	channel := model.Channel{Id: id}
-	err := channel.Delete()
+	err = channel.Delete()
 	if err != nil {
 		common.ApiError(c, err)
 		return
@@ -701,6 +719,20 @@ func DeleteChannel(c *gin.Context) {
 }
 
 func DeleteDisabledChannel(c *gin.Context) {
+	role := c.GetInt("role")
+	if role < common.RoleRootUser {
+		channels, getErr := model.GetAllChannels(0, 0, true, false)
+		if getErr != nil {
+			common.ApiError(c, getErr)
+			return
+		}
+		for _, channel := range channels {
+			if channel.Status != common.ChannelStatusEnabled && service.IsRootOnlyChannel(channel) {
+				common.ApiErrorMsg(c, "存在超级管理员专属禁用渠道，无法批量删除")
+				return
+			}
+		}
+	}
 	rows, err := model.DeleteDisabledChannel()
 	if err != nil {
 		common.ApiError(c, err)
@@ -728,6 +760,7 @@ type ChannelTag struct {
 }
 
 func DisableTagChannels(c *gin.Context) {
+	role := c.GetInt("role")
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
 	if err != nil || channelTag.Tag == "" {
@@ -736,6 +769,19 @@ func DisableTagChannels(c *gin.Context) {
 			"message": "参数错误",
 		})
 		return
+	}
+	if role < common.RoleRootUser {
+		tagChannels, getErr := model.GetChannelsByTag(channelTag.Tag, false, false)
+		if getErr != nil {
+			common.ApiError(c, getErr)
+			return
+		}
+		for _, ch := range tagChannels {
+			if service.IsRootOnlyChannel(ch) {
+				common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+				return
+			}
+		}
 	}
 	err = model.DisableChannelByTag(channelTag.Tag)
 	if err != nil {
@@ -751,6 +797,7 @@ func DisableTagChannels(c *gin.Context) {
 }
 
 func EnableTagChannels(c *gin.Context) {
+	role := c.GetInt("role")
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
 	if err != nil || channelTag.Tag == "" {
@@ -759,6 +806,19 @@ func EnableTagChannels(c *gin.Context) {
 			"message": "参数错误",
 		})
 		return
+	}
+	if role < common.RoleRootUser {
+		tagChannels, getErr := model.GetChannelsByTag(channelTag.Tag, false, false)
+		if getErr != nil {
+			common.ApiError(c, getErr)
+			return
+		}
+		for _, ch := range tagChannels {
+			if service.IsRootOnlyChannel(ch) {
+				common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+				return
+			}
+		}
 	}
 	err = model.EnableChannelByTag(channelTag.Tag)
 	if err != nil {
@@ -774,6 +834,7 @@ func EnableTagChannels(c *gin.Context) {
 }
 
 func EditTagChannels(c *gin.Context) {
+	role := c.GetInt("role")
 	channelTag := ChannelTag{}
 	err := c.ShouldBindJSON(&channelTag)
 	if err != nil {
@@ -789,6 +850,19 @@ func EditTagChannels(c *gin.Context) {
 			"message": "tag不能为空",
 		})
 		return
+	}
+	if role < common.RoleRootUser {
+		tagChannels, getErr := model.GetChannelsByTag(channelTag.Tag, false, false)
+		if getErr != nil {
+			common.ApiError(c, getErr)
+			return
+		}
+		for _, ch := range tagChannels {
+			if service.IsRootOnlyChannel(ch) {
+				common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+				return
+			}
+		}
 	}
 	if channelTag.ParamOverride != nil {
 		trimmed := strings.TrimSpace(*channelTag.ParamOverride)
@@ -831,6 +905,7 @@ type ChannelBatch struct {
 }
 
 func DeleteChannelBatch(c *gin.Context) {
+	role := c.GetInt("role")
 	channelBatch := ChannelBatch{}
 	err := c.ShouldBindJSON(&channelBatch)
 	if err != nil || len(channelBatch.Ids) == 0 {
@@ -839,6 +914,19 @@ func DeleteChannelBatch(c *gin.Context) {
 			"message": "参数错误",
 		})
 		return
+	}
+	if role < common.RoleRootUser {
+		for _, id := range channelBatch.Ids {
+			channel, getErr := model.GetChannelById(id, false)
+			if getErr != nil {
+				common.ApiError(c, getErr)
+				return
+			}
+			if service.IsRootOnlyChannel(channel) {
+				common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+				return
+			}
+		}
 	}
 	err = model.BatchDeleteChannels(channelBatch.Ids)
 	if err != nil {
@@ -861,6 +949,7 @@ type PatchChannel struct {
 }
 
 func UpdateChannel(c *gin.Context) {
+	role := c.GetInt("role")
 	channel := PatchChannel{}
 	err := c.ShouldBindJSON(&channel)
 	if err != nil {
@@ -885,6 +974,11 @@ func UpdateChannel(c *gin.Context) {
 		})
 		return
 	}
+	if !service.CanEditChannel(role, originChannel) {
+		common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+		return
+	}
+	service.NormalizeChannelOtherInfoForRole(role, &channel.Channel)
 
 	// Always copy the original ChannelInfo so that fields like IsMultiKey and MultiKeySize are retained.
 	channel.ChannelInfo = originChannel.ChannelInfo
@@ -1112,6 +1206,7 @@ func FetchModels(c *gin.Context) {
 }
 
 func BatchSetChannelTag(c *gin.Context) {
+	role := c.GetInt("role")
 	channelBatch := ChannelBatch{}
 	err := c.ShouldBindJSON(&channelBatch)
 	if err != nil || len(channelBatch.Ids) == 0 {
@@ -1120,6 +1215,19 @@ func BatchSetChannelTag(c *gin.Context) {
 			"message": "参数错误",
 		})
 		return
+	}
+	if role < common.RoleRootUser {
+		for _, id := range channelBatch.Ids {
+			channel, getErr := model.GetChannelById(id, false)
+			if getErr != nil {
+				common.ApiError(c, getErr)
+				return
+			}
+			if service.IsRootOnlyChannel(channel) {
+				common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
+				return
+			}
+		}
 	}
 	err = model.BatchSetChannelTag(channelBatch.Ids, channelBatch.Tag)
 	if err != nil {
@@ -1183,6 +1291,7 @@ func GetTagModels(c *gin.Context) {
 //	suffix         - string appended to the original name (default "_复制")
 //	reset_balance  - bool, when true will reset balance & used_quota to 0 (default true)
 func CopyChannel(c *gin.Context) {
+	role := c.GetInt("role")
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "invalid id"})
@@ -1202,6 +1311,10 @@ func CopyChannel(c *gin.Context) {
 	if err != nil {
 		common.SysError("failed to get channel by id: " + err.Error())
 		c.JSON(http.StatusOK, gin.H{"success": false, "message": "获取渠道信息失败，请稍后重试"})
+		return
+	}
+	if !service.CanEditChannel(role, origin) {
+		common.ApiErrorMsg(c, "无权操作超级管理员专属渠道")
 		return
 	}
 

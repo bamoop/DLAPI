@@ -56,6 +56,7 @@ import {
   getChannelIcon,
   getModelCategories,
   selectFilter,
+  isRoot,
 } from '../../../../helpers';
 import ModelSelectModal from './ModelSelectModal';
 import SingleModelSelectModal from './SingleModelSelectModal';
@@ -150,7 +151,7 @@ function type2secretPrompt(type) {
     case 45:
       return '请输入渠道对应的鉴权密钥, 豆包语音输入：AppId|AccessToken';
     case 50:
-      return '按照如下格式输入: AccessKey|SecretKey, 如果上游是New API，则直接输ApiKey';
+      return '按照如下格式输入: AccessKey|SecretKey, 如果上游是转发项目，则直接输ApiKey';
     case 51:
       return '按照如下格式输入: AccessKey|SecretAccessKey';
     case 57:
@@ -215,6 +216,8 @@ const EditChannelModal = (props) => {
     upstream_model_update_last_check_time: 0,
     upstream_model_update_last_detected_models: [],
     upstream_model_update_ignored_models: '',
+    other_info: '',
+    root_only: false,
   };
   const [batch, setBatch] = useState(false);
   const [multiToSingle, setMultiToSingle] = useState(false);
@@ -620,7 +623,7 @@ const EditChannelModal = (props) => {
       Modal.confirm({
         title: '警告',
         content:
-          '不需要在末尾加/v1，New API会自动处理，添加后可能导致请求失败，是否继续？',
+          '不需要在末尾加/v1，系统会自动处理，添加后可能导致请求失败，是否继续？',
         onOk: () => {
           setInputs((inputs) => ({ ...inputs, [name]: value }));
         },
@@ -1006,6 +1009,7 @@ const EditChannelModal = (props) => {
       if (data.other_info) {
         try {
           const maybeMeta = JSON.parse(data.other_info);
+          data.root_only = maybeMeta?.root_only === true;
           if (
             maybeMeta &&
             typeof maybeMeta === 'object' &&
@@ -1828,6 +1832,21 @@ const EditChannelModal = (props) => {
 
     localInputs.settings = JSON.stringify(settings);
 
+    let otherInfo = {};
+    if (localInputs.other_info) {
+      try {
+        otherInfo = JSON.parse(localInputs.other_info);
+      } catch (error) {
+        console.error('解析other_info失败:', error);
+      }
+    }
+    if (localInputs.root_only === true) {
+      otherInfo.root_only = true;
+    } else if ('root_only' in otherInfo) {
+      delete otherInfo.root_only;
+    }
+    localInputs.other_info = JSON.stringify(otherInfo);
+
     // 清理不需要发送到后端的字段
     delete localInputs.force_format;
     delete localInputs.thinking_to_content;
@@ -1853,6 +1872,7 @@ const EditChannelModal = (props) => {
     delete localInputs.upstream_model_update_last_check_time;
     delete localInputs.upstream_model_update_last_detected_models;
     delete localInputs.upstream_model_update_ignored_models;
+    delete localInputs.root_only;
 
     let res;
     localInputs.auto_ban = localInputs.auto_ban ? 1 : 0;
@@ -2666,6 +2686,22 @@ const EditChannelModal = (props) => {
                       autoComplete='new-password'
                     />
 
+                    {isRoot() && (
+                      <Form.Switch
+                        field='root_only'
+                        label={t('超级管理员专属渠道')}
+                        checkedText={t('是')}
+                        uncheckedText={t('否')}
+                        initValue={inputs.root_only === true}
+                        onChange={(value) => {
+                          handleInputChange('root_only', value);
+                        }}
+                        extraText={t(
+                          '开启后，普通管理员只能看到该渠道存在，但无法查看敏感配置或修改。',
+                        )}
+                      />
+                    )}
+
                     {inputs.type === 33 && (
                       <>
                         <Form.Select
@@ -3324,7 +3360,7 @@ const EditChannelModal = (props) => {
                           <Banner
                             type='warning'
                             description={t(
-                              '如果你对接的是上游One API或者New API等转发项目，请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。',
+                              '如果你对接的是上游转发项目（如 One API 等），请使用OpenAI类型，不要使用此类型，除非你知道你在做什么。',
                             )}
                             className='!rounded-lg'
                           />
@@ -3373,7 +3409,7 @@ const EditChannelModal = (props) => {
                               showClear
                               disabled={isIonetLocked}
                               extraText={t(
-                                '对于官方渠道，new-api已经内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写',
+                                '对于官方渠道，系统已内置地址，除非是第三方代理站点或者Azure的特殊接入地址，否则不需要填写',
                               )}
                             />
                           </div>

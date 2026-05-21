@@ -2,12 +2,36 @@ package claude
 
 import (
 	"encoding/base64"
+	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/stretchr/testify/require"
 )
+
+func TestHandleClaudeResponseDataPreservesUpstreamErrorStatus(t *testing.T) {
+	body := []byte(`{"type":"error","error":{"type":"invalid_api_key","message":"Incorrect API key provided: sk123123"}}`)
+	resp := &http.Response{StatusCode: http.StatusUnauthorized}
+
+	err := HandleClaudeResponseData(nil, nil, nil, resp, body)
+
+	require.NotNil(t, err)
+	require.Equal(t, http.StatusUnauthorized, err.StatusCode)
+	require.Equal(t, "invalid_api_key", string(err.GetErrorCode()))
+	require.Contains(t, err.Error(), "Incorrect API key provided")
+}
+
+func TestHandleStreamResponseDataPreservesUpstreamErrorStatus(t *testing.T) {
+	resp := &http.Response{StatusCode: http.StatusForbidden}
+
+	err := HandleStreamResponseData(nil, nil, nil, resp, `{"type":"error","error":{"type":"invalid_api_key","message":"bad key"}}`)
+
+	require.NotNil(t, err)
+	require.Equal(t, http.StatusForbidden, err.StatusCode)
+	require.Equal(t, "invalid_api_key", string(err.GetErrorCode()))
+	require.Contains(t, err.Error(), "bad key")
+}
 
 func TestFormatClaudeResponseInfo_MessageStart(t *testing.T) {
 	claudeInfo := &ClaudeResponseInfo{

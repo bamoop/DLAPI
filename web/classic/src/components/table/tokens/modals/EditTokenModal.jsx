@@ -81,6 +81,7 @@ const EditTokenModal = (props) => {
     allow_ips: '',
     group: '',
     cross_group_retry: false,
+    claude_code_header: false,
     tokenCount: 1,
   });
 
@@ -422,6 +423,16 @@ const EditTokenModal = (props) => {
                       size='default'
                       extraText={t(
                         '开启后，当前分组渠道失败时会按顺序尝试下一个分组的渠道',
+                      )}
+                    />
+                  </Col>
+                  <Col span={24}>
+                    <Form.Switch
+                      field='claude_code_header'
+                      label={t('增加 Claude Code 请求头')}
+                      size='default'
+                      extraText={t(
+                        '开启后，对 claude-* 模型的请求会附带 Claude Code CLI 的指纹请求头（User-Agent、X-Stainless-*、anthropic-beta 等）',
                       )}
                     />
                   </Col>
