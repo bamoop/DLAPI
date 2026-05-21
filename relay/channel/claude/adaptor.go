@@ -75,6 +75,15 @@ func ApplyClaudeCodeBodyMimicry(c *gin.Context, body []byte) []byte {
 		return body
 	}
 
+	// If the request already carries our Claude Code mimicry fingerprint
+	// (e.g. the upstream is another instance of this gateway with the same
+	// toggle on), skip both body and header injection — re-applying would
+	// stack the system prompt and inflate the token count.
+	if isClaudeCodeFormattedBody(body) {
+		c.Set("claude_code_already_mimicked", true)
+		return body
+	}
+
 	originalSystem := extractSystemTextFromBody(body)
 
 	// Step 1: replace system with the two-block Claude Code system array.
@@ -248,6 +257,16 @@ func prependSystemMessagesInBody(body []byte, originalSystem string) ([]byte, er
 	return sjson.SetBytes(body, "messages", combined)
 }
 
+// isClaudeCodeFormattedBody returns true when the request body already carries
+// the Claude Code mimicry fingerprint we (or another upstream of ours) would
+// have injected. Anchored on system[0].text starting with the literal
+// "x-anthropic-billing-header:" prefix, which is produced exclusively by
+// buildClaudeCodeSystemFromBody and is implausible in user-authored content.
+func isClaudeCodeFormattedBody(body []byte) bool {
+	first := gjson.GetBytes(body, "system.0.text").String()
+	return strings.HasPrefix(first, "x-anthropic-billing-header:")
+}
+
 // looksLikeClaudeCodeUserID returns true if the existing metadata.user_id is
 // already in either the new JSON format or the legacy "user_..." format.
 func looksLikeClaudeCodeUserID(s string) bool {
@@ -342,6 +361,11 @@ func applyClaudeCodeMimicryHeaders(c *gin.Context, req *http.Header, info *relay
 		model = info.OriginModelName
 	}
 	if !strings.HasPrefix(strings.ToLower(strings.TrimSpace(model)), "claude-") {
+		return
+	}
+	// Skip header injection when ApplyClaudeCodeBodyMimicry already detected
+	// the request was pre-formatted by an upstream gateway with the same toggle.
+	if c.GetBool("claude_code_already_mimicked") {
 		return
 	}
 
