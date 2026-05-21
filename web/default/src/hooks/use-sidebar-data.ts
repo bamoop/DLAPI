@@ -22,14 +22,11 @@ import {
   Key,
   FileText,
   Wallet,
-  Box,
   Users,
   Ticket,
   User,
   Command,
   Radio,
-  FlaskConical,
-  MessageSquare,
   CreditCard,
   ListTodo,
   Settings,
@@ -51,22 +48,6 @@ export function useSidebarData(): SidebarData {
       },
     ],
     navGroups: [
-      {
-        id: 'chat',
-        title: t('Chat'),
-        items: [
-          {
-            title: t('Playground'),
-            url: '/playground',
-            icon: FlaskConical,
-          },
-          {
-            title: t('Chat'),
-            icon: MessageSquare,
-            type: 'chat-presets',
-          },
-        ],
-      },
       {
         id: 'general',
         title: t('General'),
@@ -124,11 +105,6 @@ export function useSidebarData(): SidebarData {
             title: t('Channels'),
             url: '/channels',
             icon: Radio,
-          },
-          {
-            title: t('Models'),
-            url: '/models/metadata',
-            icon: Box,
           },
           {
             title: t('Users'),
