@@ -3684,6 +3684,11 @@
     "并确认自行承担部署": "confirm that I bear legal responsibility arising from deployment",
     "运营和收费行为产生的法律责任": "operation and charging behavior",
     "，": ", ",
-    "、": ", "
+    "、": ", ",
+    "GPT Key 测试": "Test de clé GPT",
+    "GPT Key 测试成功": "Test de clé GPT réussi",
+    "GPT Key 测试失败": "Échec du test de clé GPT",
+    "GPT Key 测试默认使用 gpt-5.5": "Le test de clé GPT utilise gpt-5.5 par défaut",
+    "GPT 测试模型": "Modèle de test GPT"
   }
 }

@@ -67,6 +67,18 @@ type ChannelInfo struct {
 	MultiKeyDisabledTime   map[int]int64         `json:"multi_key_disabled_time,omitempty"`   // key禁用时间列表，key index -> time
 	MultiKeyPollingIndex   int                   `json:"multi_key_polling_index"`             // 多Key模式下轮询的key索引
 	MultiKeyMode           constant.MultiKeyMode `json:"multi_key_mode"`
+	Fingerprint            UpstreamFingerprint   `json:"fingerprint,omitempty"`
+}
+
+type UpstreamFingerprint struct {
+	HeaderSetHash      string `json:"header_set_hash,omitempty"`
+	ErrorShapeHash     string `json:"error_shape_hash,omitempty"`
+	ModelSetHash       string `json:"model_set_hash,omitempty"`
+	SSESequenceHash    string `json:"sse_sequence_hash,omitempty"`
+	TokenAccuracyClass string `json:"token_accuracy_class,omitempty"`
+	CompositeHash      string `json:"composite_hash,omitempty"`
+	LastProbedAt       int64  `json:"last_probed_at,omitempty"`
+	ProbeVersion       int    `json:"probe_version,omitempty"`
 }
 
 type ChannelSortOptions struct {

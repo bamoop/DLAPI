@@ -4218,6 +4218,11 @@
     "并确认自行承担部署": "confirm that I bear legal responsibility arising from deployment",
     "运营和收费行为产生的法律责任": "operation and charging behavior",
     "，": ", ",
-    "、": ", "
+    "、": ", ",
+    "GPT Key 测试": "Kiểm tra GPT Key",
+    "GPT Key 测试成功": "Kiểm tra GPT Key thành công",
+    "GPT Key 测试失败": "Kiểm tra GPT Key thất bại",
+    "GPT Key 测试默认使用 gpt-5.5": "Kiểm tra GPT Key dùng gpt-5.5 theo mặc định",
+    "GPT 测试模型": "Mô hình kiểm tra GPT"
   }
 }

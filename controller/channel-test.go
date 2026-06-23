@@ -498,6 +498,21 @@ func testChannel(channel *model.Channel, testModel string, endpointType string, 
 		Other:            other,
 	})
 	common.SysLog(fmt.Sprintf("testing channel #%d, response: \n%s", channel.Id, string(respBody)))
+	if httpResp != nil {
+		probeChannelID := channel.Id
+		probeHeaders := httpResp.Header.Clone()
+		gopool.Go(func() {
+			ch, err := model.GetChannelById(probeChannelID, true)
+			if err != nil || ch == nil {
+				return
+			}
+			_, _, _ = runChannelFingerprintProbe(ch, probeOptions{
+				source:         "auto",
+				successHeaders: probeHeaders,
+				respectGate:    true,
+			})
+		})
+	}
 	return testResult{
 		context:     c,
 		localErr:    nil,

@@ -219,6 +219,9 @@ func SetApiRouter(router *gin.Engine) {
 		channelRoute.Use(middleware.AdminAuth())
 		{
 			channelRoute.GET("/", controller.GetAllChannels)
+			channelRoute.GET("/clusters", controller.GetChannelClusters)
+			channelRoute.POST("/fingerprint/probe/:id", controller.ProbeChannelFingerprint)
+			channelRoute.GET("/fingerprint/history/:id", controller.GetChannelFingerprintHistory)
 			channelRoute.GET("/search", controller.SearchChannels)
 			channelRoute.GET("/models", controller.ChannelListModels)
 			channelRoute.GET("/models_enabled", controller.EnabledListModels)
@@ -386,6 +389,30 @@ func SetApiRouter(router *gin.Engine) {
 			deploymentsRoute.PUT("/:id/name", controller.UpdateDeploymentName)
 			deploymentsRoute.POST("/:id/extend", controller.ExtendDeployment)
 			deploymentsRoute.DELETE("/:id", controller.DeleteDeployment)
+		}
+
+		// Upstream site management (root admin only)
+		upstreamRoute := apiRouter.Group("/upstream")
+		upstreamRoute.Use(middleware.RootAuth())
+		{
+			upstreamRoute.GET("/", controller.GetUpstreamSites)
+			upstreamRoute.POST("/", controller.AddUpstreamSite)
+			upstreamRoute.PUT("/", controller.UpdateUpstreamSite)
+			upstreamRoute.DELETE("/:id", controller.DeleteUpstreamSite)
+			upstreamRoute.POST("/:id/sync", controller.SyncUpstreamSite)
+			upstreamRoute.POST("/test", controller.TestUpstreamSiteConnection)
+			upstreamRoute.GET("/:id/groups", controller.GetUpstreamGroups)
+			upstreamRoute.POST("/:id/groups/:group/token", controller.CreateGroupToken)
+			upstreamRoute.POST("/sync-all", controller.SyncAllUpstreamSites)
+			upstreamRoute.PATCH("/:id/remark", controller.UpdateUpstreamSiteRemark)
+			upstreamRoute.GET("/search-keys", controller.SearchUpstreamKeys)
+			upstreamRoute.GET("/key-test/presets", controller.GetLatencyTestPresets)
+			upstreamRoute.GET("/key-test/presets/:id", controller.GetLatencyTestPresetText)
+			upstreamRoute.POST("/key-test/quick", controller.QuickTestUpstreamKey)
+			upstreamRoute.POST("/key-test/gpt-quick", controller.QuickTestGPTUpstreamKey)
+			upstreamRoute.POST("/key-test/advanced", controller.AdvancedTestUpstreamKey)
+			upstreamRoute.POST("/key-test/cache-hitrate", controller.CacheHitrateTest)
+			upstreamRoute.POST("/key-test/claude-detect", controller.ClaudeDetectUpstreamKeyV2)
 		}
 	}
 }

@@ -3653,6 +3653,11 @@
     "并确认自行承担部署": "confirm that I bear legal responsibility arising from deployment",
     "运营和收费行为产生的法律责任": "operation and charging behavior",
     "，": ", ",
-    "、": ", "
+    "、": ", ",
+    "GPT Key 测试": "GPTキーをテスト",
+    "GPT Key 测试成功": "GPTキーのテストに成功しました",
+    "GPT Key 测试失败": "GPTキーのテストに失敗しました",
+    "GPT Key 测试默认使用 gpt-5.5": "GPTキーのテストはデフォルトでgpt-5.5を使用します",
+    "GPT 测试模型": "GPTテストモデル"
   }
 }

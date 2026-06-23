@@ -47,6 +47,7 @@ const routerMap = {
   task: '/console/task',
   models: '/console/models',
   deployment: '/console/deployment',
+  upstream: '/console/upstream',
   playground: '/console/playground',
   personal: '/console/personal',
 };
@@ -182,6 +183,12 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         itemKey: 'user',
         to: '/user',
         className: isAdmin() ? '' : 'tableHiddle',
+      },
+      {
+        text: t('上游管理'),
+        itemKey: 'upstream',
+        to: '/upstream',
+        className: isRoot() ? '' : 'tableHiddle',
       },
       {
         text: t('系统设置'),

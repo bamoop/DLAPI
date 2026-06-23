@@ -205,7 +205,9 @@ export async function getUserGroups(): Promise<{
 
 // Get system status
 export async function getStatus() {
-  const res = await api.get('/api/status')
+  const res = await api.get('/api/status', {
+    skipErrorHandler: true,
+  } as Record<string, unknown>)
   return res.data?.data as Record<string, unknown>
 }
 

@@ -3704,6 +3704,11 @@
     "并确认自行承担部署": "confirm that I bear legal responsibility arising from deployment",
     "运营和收费行为产生的法律责任": "operation and charging behavior",
     "，": ", ",
-    "、": ", "
+    "、": ", ",
+    "GPT Key 测试": "Тест GPT-ключа",
+    "GPT Key 测试成功": "Тест GPT-ключа успешен",
+    "GPT Key 测试失败": "Тест GPT-ключа не удался",
+    "GPT Key 测试默认使用 gpt-5.5": "Тест GPT-ключа по умолчанию использует gpt-5.5",
+    "GPT 测试模型": "Модель для теста GPT"
   }
 }

@@ -1203,6 +1203,7 @@ export const useChannelsData = () => {
     setShowMultiKeyManageModal,
     currentMultiKeyChannel,
     setCurrentMultiKeyChannel,
+
     ...upstreamUpdates,
 
     // Form

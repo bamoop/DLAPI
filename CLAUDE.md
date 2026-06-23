@@ -35,9 +35,23 @@ oauth/         — OAuth provider implementations
 pkg/           — Internal packages (cachex, ionet)
 web/             — Frontend themes container
  web/default/   — Default frontend (React 19, Rsbuild, Base UI, Tailwind)
-  web/classic/   — Classic frontend (React 18, Vite, Semi Design)
+  web/classic/   — Classic frontend (React 18, Vite, Semi Design) — **DEFAULT THEME for this project**
   web/default/src/i18n/ — Frontend internationalization (i18next, zh/en/fr/ru/ja/vi)
 ```
+
+### Active frontend
+
+This project **uses `web/classic` by default** (`common.GetTheme()` initializes to `"classic"` in `common/constants.go`). Any new admin-facing UI features MUST be implemented in `web/classic/src/` unless the user explicitly asks for the default theme. Do not assume `web/default` is what the user sees — it is the alternative theme, not the active one.
+
+### Rebuild sequence after touching `web/classic`
+
+`go:embed` in `main.go` bundles the prebuilt `web/classic/dist` into the Go binary. After changing classic source the user must:
+
+1. `cd web/classic && bun run build` — regenerate dist
+2. `go build ./...` — re-embed
+3. Restart the running `new-api` binary
+
+If the user reports "I don't see my changes," the first thing to check is whether they re-ran steps 2 and 3. Frontend dev (`bun run dev`) hot-reloads React but the backend still needs to be restarted to pick up any new API routes added in the same change.
 
 ## Internationalization (i18n)
 
